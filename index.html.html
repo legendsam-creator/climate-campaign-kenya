@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoResilience Kenya | Community-Led Climate Action & Environmental Data Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans for modern Kurzgesagt feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for County Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#11632e',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        kurz: {
+                            yellow: '#ffd166',
+                            orange: '#f78c6b',
+                            blue: '#118ab2',
+                            teal: '#06d6a0',
+                            pink: '#ef476f',
+                            purple: '#8338ec',
+                            dark: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Outfit', sans-serif; }
+        .gradient-hero-green {
+            background: linear-gradient(135deg, rgba(5, 46, 22, 0.96) 0%, rgba(20, 83, 45, 0.92) 50%, rgba(15, 23, 42, 0.95) 100%),
+                        url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1800&q=80') center/cover no-repeat;
+        }
+        .kurz-card {
+            background: #ffffff;
+            border: 3px solid #0f172a;
+            box-shadow: 6px 6px 0px #0f172a;
+            border-radius: 1.25rem;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .kurz-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0px #0f172a;
+        }
+        .kurz-card-dark {
+            background: #1e293b;
+            border: 3px solid #4ade80;
+            box-shadow: 6px 6px 0px #4ade80;
+            border-radius: 1.25rem;
+        }
+        /* Custom image comparison slider styles */
+        .comparison-slider {
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+        .comparison-before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            overflow: hidden;
+            z-index: 10;
+        }
+        .comparison-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: #22c55e;
+            z-index: 20;
+            cursor: ew-resize;
+        }
+        .comparison-handle::after {
+            content: '\f337';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #22c55e;
+            color: #052e16;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="font-sans bg-slate-900 text-slate-100 antialiased selection:bg-brand-500 selection:text-slate-950">
+
+    <nav class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-brand-900/50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-slate-950 text-2xl font-black shadow-lg shadow-brand-500/20 border-2 border-slate-950">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <div>
+                    <span class="text-2xl font-extrabold tracking-tight text-white font-heading block leading-tight">EcoResilience</span>
+                    <span class="text-xs font-bold text-brand-400 tracking-widest uppercase">Kenya Climate Portal</span>
+                </div>
+            </div>
+
+            <!-- Desktop Nav Links -->
+            <div class="hidden lg:flex items-center gap-7 font-medium text-slate-300 text-sm">
+                <a href="#simulation" class="hover:text-brand-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-gamepad text-xs text-kurz-yellow"></i> City Sim</a>
+                <a href="#infographics" class="hover:text-brand-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chart-pie text-xs text-kurz-teal"></i> Visual Science</a>
+                <a href="#imagery" class="hover:text-brand-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-satellite text-xs text-kurz-blue"></i> Satellites</a>
+                <a href="#dashboard" class="hover:text-brand-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-map-location-dot text-xs text-kurz-orange"></i> County Data</a>
+                <a href="#upload-portal" class="hover:text-brand-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-up text-xs text-kurz-pink"></i> Report Hazard</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="#donate" class="bg-brand-500 hover:bg-brand-400 text-slate-950 font-black px-5 py-2.5 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_#0f172a] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>Take Action</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="gradient-hero-green text-white py-20 lg:py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2 bg-brand-950/80 border border-brand-500/40 px-4 py-1.5 rounded-full text-xs font-bold text-brand-300">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-400 animate-ping"></span>
+                        Interactive Environmental Science & Action Platform
+                    </div>
+                    <h1 class="text-4xl sm:text-6xl font-black font-heading tracking-tight leading-[1.1] text-white">
+                        Visualizing & Fighting Climate Shocks Across <span class="text-brand-400 underline decoration-brand-500/60">Kenyan Counties</span>
+                    </h1>
+                    <p class="text-lg text-slate-200 font-normal leading-relaxed">
+                        Combating deforestation, urban heat islands, and water contamination through real-time satellite insights, community citizen science reporting, and youth-led restoration.
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-4 pt-2">
+                        <a href="#simulation" class="bg-brand-400 hover:bg-brand-300 text-slate-950 font-black px-7 py-3.5 rounded-2xl border-2 border-slate-950 shadow-[4px_4px_0px_#052e16] transition-all text-base flex items-center gap-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Launch Climate Sim</span>
+                        </a>
+                        <a href="#upload-portal" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3.5 rounded-2xl border-2 border-brand-500/50 shadow-md transition-all text-base flex items-center gap-2">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>Report Pollution Incident</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Impact Live Counter -->
+                <div class="lg:col-span-5">
+                    <div class="kurz-card-dark p-8">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-xs font-extrabold uppercase tracking-widest text-brand-400"><i class="fa-solid fa-shield-halved"></i> Grassroots Goal Tracker</span>
+                            <span class="bg-brand-500/20 text-brand-300 border border-brand-500/40 text-xs font-bold px-3 py-1 rounded-full">Phase 2 Active</span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="text-4xl font-black font-heading text-white">KES 642,500</div>
+                            <div class="text-xs text-slate-400 mt-1">raised of KES 1,500,000 target for community kits</div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-800 rounded-full h-4 mb-6 border border-slate-700 overflow-hidden p-0.5">
+                            <div class="bg-gradient-to-r from-brand-500 to-kurz-teal h-2.5 rounded-full transition-all duration-1000" style="width: 42.8%"></div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 text-center py-4 border-y border-slate-800 mb-6 text-xs font-semibold">
+                            <div>
+                                <span class="block text-lg font-black text-white font-heading">47</span>
+                                <span class="text-slate-400">Counties Tracked</span>
+                            </div>
+                            <div class="border-x border-slate-800">
+                                <span class="block text-lg font-black text-brand-400 font-heading">1,840+</span>
+                                <span class="text-slate-400">User Reports</span>
+                            </div>
+                            <div>
+                                <span class="block text-lg font-black text-kurz-teal font-heading">88%</span>
+                                <span class="text-slate-400">Tree Survival Rate</span>
+                            </div>
+                        </div>
+
+                        <a href="#donate" class="block w-full text-center bg-brand-500 hover:bg-brand-400 text-slate-950 font-black py-3.5 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_#000] transition-all text-sm">
+                            Sponsor Water Testing & Planting Kits
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="simulation" class="py-20 bg-slate-950 border-t border-brand-900/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-3">
+                <span class="bg-kurz-yellow/20 text-kurz-yellow border border-kurz-yellow/30 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block">
+                    <i class="fa-solid fa-sliders"></i> Interactive Micro-Climate Sandbox
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black font-heading text-white">Urban Heat & Pollution Simulator</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Adjust the urban landscape variables below to observe real-time simulated effects on city ambient temperature, river contamination, and air quality (AQI) in urban areas like Nairobi, Mombasa, or Kisumu.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-8 items-center bg-slate-900 p-6 sm:p-8 rounded-3xl border-2 border-brand-800/60 shadow-2xl">
+                <!-- Simulation Controls -->
+                <div class="lg:col-span-5 space-y-6">
+                    <h3 class="text-xl font-bold font-heading text-brand-300 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-kurz-yellow"></i> Landscape Variables
+                    </h3>
+
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-slate-300"><i class="fa-solid fa-tree text-brand-400"></i> Tree Canopy Density</span>
+                            <span id="canopy-val" class="text-brand-400 font-bold">20%</span>
+                        </div>
+                        <input type="range" id="sim-canopy" min="5" max="80" value="20" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-brand-500" oninput="updateSimulation()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-slate-300"><i class="fa-solid fa-building text-slate-400"></i> Concrete & Urban Sprawl</span>
+                            <span id="urban-val" class="text-kurz-orange font-bold">60%</span>
+                        </div>
+                        <input type="range" id="sim-urban" min="10" max="90" value="60" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-kurz-orange" oninput="updateSimulation()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-slate-300"><i class="fa-solid fa-industry text-kurz-pink"></i> Industrial & Vehicle Emissions</span>
+                            <span id="emissions-val" class="text-kurz-pink font-bold">50%</span>
+                        </div>
+                        <input type="range" id="sim-emissions" min="10" max="100" value="50" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-kurz-pink" oninput="updateSimulation()">
+                    </div>
+
+                    <!-- Sim Indicators Output -->
+                    <div class="grid grid-cols-3 gap-3 pt-4 border-t border-slate-800 text-center">
+                        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                            <span class="block text-xs text-slate-400 font-medium">Temp Heat</span>
+                            <span id="output-temp" class="text-xl font-black font-heading text-kurz-orange">33.2°C</span>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                            <span class="block text-xs text-slate-400 font-medium">Air Quality</span>
+                            <span id="output-aqi" class="text-xl font-black font-heading text-kurz-pink">142 AQI</span>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                            <span class="block text-xs text-slate-400 font-medium">River Risk</span>
+                            <span id="output-water" class="text-xl font-black font-heading text-kurz-yellow">High</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Visualizer -->
+                <div class="lg:col-span-7">
+                    <div class="relative bg-slate-950 rounded-2xl border-2 border-slate-800 overflow-hidden shadow-inner">
+                        <canvas id="simCanvas" class="w-full h-72 sm:h-96 block"></canvas>
+                        <div class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700 text-xs text-slate-300 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-400 animate-ping"></span> Live Physics Simulation
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="infographics" class="py-20 bg-slate-900 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span class="bg-kurz-teal/20 text-kurz-teal border border-kurz-teal/30 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block">
+                    <i class="fa-solid fa-brain"></i> Kurzgesagt Visual Science Series
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black font-heading text-white">How Pollution Operates in Kenya</h2>
+                <p class="text-slate-400 text-base">Simple, vector-style breakdowns of climate feedback loops impacting our soil, rivers, and atmosphere.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Infographic Card 1 -->
+                <div class="kurz-card p-6 text-slate-950 relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-kurz-orange text-slate-950 flex items-center justify-center text-2xl font-black mb-4 border-2 border-slate-950">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-wider text-slate-600 block">System Breakdown #01</span>
+                    <h3 class="text-2xl font-black font-heading mt-1 mb-3">The Urban Water Runoff Loop</h3>
+                    <p class="text-slate-700 text-sm leading-relaxed mb-6">
+                        During heavy rains, uncollected plastic debris blocks open channels, forcing contaminated water into informal housing zones and raising waterborne pathogens by 300%.
+                    </p>
+                    <div class="bg-amber-100 p-4 rounded-xl border-2 border-slate-950 text-xs font-bold text-slate-900 space-y-2">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-arrow-right text-kurz-orange"></i> Blocked Drain → Stagnant Flooding</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-arrow-right text-kurz-orange"></i> E. coli Contamination Spread</div>
+                    </div>
+                </div>
+
+                <!-- Infographic Card 2 -->
+                <div class="kurz-card p-6 text-slate-950 relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-kurz-teal text-slate-950 flex items-center justify-center text-2xl font-black mb-4 border-2 border-slate-950">
+                        <i class="fa-solid fa-tree"></i>
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-wider text-slate-600 block">System Breakdown #02</span>
+                    <h3 class="text-2xl font-black font-heading mt-1 mb-3">Deforestation & Siltation Cycle</h3>
+                    <p class="text-slate-700 text-sm leading-relaxed mb-6">
+                        Removing tree canopy along major water towers causes topsoil erosion. Heavy silt washes into hydro-reservoirs, drastically reducing clean water holding capacity.
+                    </p>
+                    <div class="bg-emerald-100 p-4 rounded-xl border-2 border-slate-950 text-xs font-bold text-slate-900 space-y-2">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-arrow-right text-kurz-teal"></i> Topsoil Loss → River Turbidity</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-arrow-right text-kurz-teal"></i> Reservoir Capacity drops 40%</div>
+                    </div>
+                </div>
+
+                <!-- Infographic Card 3 -->
+                <div class="kurz-card p-6 text-slate-950 relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-kurz-yellow text-slate-950 flex items-center justify-center text-2xl font-black mb-4 border-2 border-slate-950">
+                        <i class="fa-solid fa-temperature-arrow-up"></i>
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-wider text-slate-600 block">System Breakdown #03</span>
+                    <h3 class="text-2xl font-black font-heading mt-1 mb-3">Urban Heat Island Effect</h3>
+                    <p class="text-slate-700 text-sm leading-relaxed mb-6">
+                        Asphalt and concrete absorb daytime solar heat, radiating it back at night. Without tree shade, urban neighborhoods stay up to 4.5°C warmer than surrounding rural areas.
+                    </p>
+                    <div class="bg-yellow-100 p-4 rounded-xl border-2 border-slate-950 text-xs font-bold text-slate-900 space-y-2">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-arrow-right text-amber-700"></i> Concrete Heat Trapping</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-arrow-right text-amber-700"></i> High Energy & Thermal Stress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="imagery" class="py-20 bg-slate-950 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span class="bg-kurz-blue/20 text-kurz-blue border border-kurz-blue/30 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block">
+                    <i class="fa-solid fa-satellite"></i> Remote Sensing Analysis
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black font-heading text-white">Satellite Comparison: Mau & River Basins</h2>
+                <p class="text-slate-400 text-base">Drag the center slider to inspect historical deforestation and ecological changes across Kenya's key water towers.</p>
+            </div>
+
+            <!-- Interactive Comparison Slider Component -->
+            <div class="max-w-4xl mx-auto">
+                <div class="comparison-slider rounded-3xl border-4 border-slate-800 shadow-2xl h-[380px] sm:h-[480px] relative">
+                    <!-- Image 2: Deforested/Polluted (After) -->
+                    <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1400&q=80" class="absolute inset-0 w-full h-full object-cover filter brightness-90 hue-rotate-15 contrast-125" alt="Degraded Landscape">
+                    <div class="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-red-500/50 text-xs font-black text-red-400 z-0">
+                        Present: Encroached & Degraded Area
+                    </div>
+
+                    <!-- Image 1: Forested/Healthy (Before) -->
+                    <div class="comparison-before" id="slider-before">
+                        <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1400&q=80" class="absolute inset-0 max-w-none h-full object-cover" id="before-img" alt="Dense Forest Cover">
+                        <div class="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-brand-500/50 text-xs font-black text-brand-400">
+                            Historical: Dense Native Canopy Cover
+                        </div>
+                    </div>
+
+                    <!-- Slider Handle -->
+                    <div class="comparison-handle" id="slider-handle"></div>
+                </div>
+
+                <div class="text-center text-xs text-slate-500 mt-4 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-left-right text-brand-400"></i> Drag the divider horizontally to view canopy cover loss
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="dashboard" class="py-20 bg-slate-900 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-3">
+                <span class="bg-kurz-orange/20 text-kurz-orange border border-kurz-orange/30 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block">
+                    <i class="fa-solid fa-chart-column"></i> National Open Data
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black font-heading text-white">Kenyan County Climate Dashboard</h2>
+                <p class="text-slate-400 text-base">Search and filter environmental metrics across Kenyan counties to track forest cover, air quality index, and vulnerability ratings.</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mb-8">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="county-search" oninput="filterCounties()" placeholder="Search county (e.g. Nakuru, Nairobi)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="sortCounties('forest')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl border border-slate-700 transition-all text-brand-300">
+                        Sort by Forest Cover
+                    </button>
+                    <button onclick="sortCounties('risk')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl border border-slate-700 transition-all text-kurz-orange">
+                        Sort by Climate Risk
+                    </button>
+                </div>
+            </div>
+
+            <!-- Counties Table / Grid -->
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-900 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4">County</th>
+                                <th class="p-4">Region</th>
+                                <th class="p-4">Forest Cover %</th>
+                                <th class="p-4">Avg AQI Index</th>
+                                <th class="p-4">Vulnerability Level</th>
+                                <th class="p-4">Action Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="county-table-body" class="divide-y divide-slate-800/60 font-medium">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="upload-portal" class="py-20 bg-slate-950 border-t border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-slate-900 rounded-3xl p-8 sm:p-12 border-2 border-brand-800/80 shadow-2xl relative">
+                <div class="text-center max-w-xl mx-auto mb-10 space-y-2">
+                    <span class="bg-kurz-pink/20 text-kurz-pink border border-kurz-pink/30 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Community Citizen Science
+                    </span>
+                    <h2 class="text-3xl font-black font-heading text-white">Report Environmental Hazards</h2>
+                    <p class="text-slate-400 text-sm">Upload images, evidence, or documents on localized pollution, illegal dumping, or deforestation in your county.</p>
+                </div>
+
+                <form id="upload-form" onsubmit="handleUpload(event)" class="space-y-6">
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Full Name / Alias</label>
+                            <input type="text" required placeholder="e.g. Jane Doe or Anonymous" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">County / Sub-County</label>
+                            <select required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-500">
+                                <option value="">Select County...</option>
+                                <option value="Nairobi">Nairobi</option>
+                                <option value="Nakuru">Nakuru</option>
+                                <option value="Kiambu">Kiambu</option>
+                                <option value="Mombasa">Mombasa</option>
+                                <option value="Kisumu">Kisumu</option>
+                                <option value="Uasin Gishu">Uasin Gishu</option>
+                                <option value="Kilifi">Kilifi</option>
+                                <option value="Machakos">Machakos</option>
+                                <option value="Other">Other County</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Hazard Category</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <label class="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-brand-500 text-xs font-bold text-slate-300">
+                                <input type="radio" name="category" value="water" checked class="text-brand-500">
+                                <span>Water Waste</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-brand-500 text-xs font-bold text-slate-300">
+                                <input type="radio" name="category" value="deforestation" class="text-brand-500">
+                                <span>Tree Cutting</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-brand-500 text-xs font-bold text-slate-300">
+                                <input type="radio" name="category" value="dumping" class="text-brand-500">
+                                <span>Illegal Dump</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-brand-500 text-xs font-bold text-slate-300">
+                                <input type="radio" name="category" value="air" class="text-brand-500">
+                                <span>Air Emissions</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Drag and drop zone -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Upload File / Image Proof</label>
+                        <div class="border-2 border-dashed border-slate-700 bg-slate-950 rounded-2xl p-8 text-center hover:border-brand-500 transition-colors cursor-pointer" onclick="document.getElementById('file-input').click()">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand-400 mb-3"></i>
+                            <p class="text-sm font-bold text-slate-200">Click or drag images/files here to attach</p>
+                            <p class="text-xs text-slate-500 mt-1">Supports PNG, JPG, MP4, PDF up to 25MB</p>
+                            <input type="file" id="file-input" class="hidden" onchange="previewFile(this)">
+                        </div>
+                        <div id="file-preview" class="hidden mt-3 p-3 bg-slate-950 border border-brand-500/40 rounded-xl text-xs font-bold text-brand-400 flex items-center justify-between">
+                            <span id="file-name">filename.jpg</span>
+                            <i class="fa-solid fa-check-circle"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Description / Specific Landmark</label>
+                        <textarea rows="3" required placeholder="Describe what you observed (e.g. Effluent leaking near riverbank off Main Street)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-brand-500"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-500 hover:bg-brand-400 text-slate-950 font-black py-4 rounded-xl border-2 border-slate-950 shadow-[4px_4px_0px_#000] transition-all text-base flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Submit Public Report to Database</span>
+                    </button>
+                </form>
+
+                <!-- Feedback Message -->
+                <div id="upload-success" class="hidden mt-6 p-4 bg-brand-950 border border-brand-500 text-brand-300 rounded-2xl text-center text-sm font-bold">
+                    <i class="fa-solid fa-circle-check text-brand-400 text-xl mb-1 block"></i>
+                    Thank you! Your report has been logged to the public climate database for review.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="donate" class="py-20 bg-slate-900 border-t border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-slate-950 rounded-3xl p-8 sm:p-12 border-2 border-slate-800 shadow-2xl">
+                <div class="text-center max-w-xl mx-auto mb-10 space-y-2">
+                    <span class="text-xs font-extrabold tracking-widest text-brand-400 uppercase">Support Grassroots Science</span>
+                    <h2 class="text-3xl font-black font-heading text-white">Fuel The Movement</h2>
+                    <p class="text-slate-400 text-sm">Every donation directly buys water testing kits and native trees cared for by local youth.</p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8" id="tier-selector">
+                    <button onclick="selectTier(500, this)" class="tier-btn active p-4 rounded-2xl border-2 border-brand-500 bg-brand-950/40 text-center transition-all">
+                        <span class="block text-xs font-bold text-slate-400 uppercase">Supporter</span>
+                        <span class="block text-xl font-black font-heading text-white mt-1">KES 500</span>
+                    </button>
+                    <button onclick="selectTier(1500, this)" class="tier-btn p-4 rounded-2xl border-2 border-slate-800 hover:border-brand-500 bg-slate-900 text-center transition-all">
+                        <span class="block text-xs font-bold text-slate-400 uppercase">Guardian</span>
+                        <span class="block text-xl font-black font-heading text-white mt-1">KES 1,500</span>
+                    </button>
+                    <button onclick="selectTier(5000, this)" class="tier-btn p-4 rounded-2xl border-2 border-slate-800 hover:border-brand-500 bg-slate-900 text-center transition-all">
+                        <span class="block text-xs font-bold text-slate-400 uppercase">Champion</span>
+                        <span class="block text-xl font-black font-heading text-white mt-1">KES 5,000</span>
+                    </button>
+                    <button onclick="selectTier('custom', this)" class="tier-btn p-4 rounded-2xl border-2 border-slate-800 hover:border-brand-500 bg-slate-900 text-center transition-all">
+                        <span class="block text-xs font-bold text-slate-400 uppercase">Custom</span>
+                        <span class="block text-xl font-black font-heading text-white mt-1">Other</span>
+                    </button>
+                </div>
+
+                <div id="custom-amount-wrap" class="hidden mb-6">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Custom Amount (KES)</label>
+                    <input type="number" id="custom-amount-input" placeholder="e.g. 2500" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-500">
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-3">Payment Method</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-800 bg-slate-900 cursor-pointer">
+                            <input type="radio" name="payment_method" value="mpesa" checked class="text-brand-500 focus:ring-brand-500">
+                            <span class="font-bold text-sm text-white">M-Pesa Express</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-800 bg-slate-900 cursor-pointer">
+                            <input type="radio" name="payment_method" value="card" class="text-brand-500 focus:ring-brand-500">
+                            <span class="font-bold text-sm text-white">Debit / Card</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="mpesa-form" class="space-y-4 mb-8">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">M-Pesa Phone Number</label>
+                        <input type="tel" id="phone-number" placeholder="0712345678" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+
+                <button onclick="processDonation()" class="w-full bg-brand-500 hover:bg-brand-400 text-slate-950 font-black py-4 rounded-xl border-2 border-slate-950 shadow-[4px_4px_0px_#000] transition-all text-base flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-shield-heart"></i>
+                    <span>Complete Secure Contribution</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-950 text-slate-400 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center text-slate-950 font-black text-sm">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <span class="text-lg font-black text-white font-heading">EcoResilience Kenya</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-6 text-xs font-semibold">
+                    <a href="#simulation" class="hover:text-brand-400 transition-colors">Simulation</a>
+                    <a href="#infographics" class="hover:text-brand-400 transition-colors">Visual Science</a>
+                    <a href="#imagery" class="hover:text-brand-400 transition-colors">Satellites</a>
+                    <a href="#dashboard" class="hover:text-brand-400 transition-colors">County Data</a>
+                    <a href="#upload-portal" class="hover:text-brand-400 transition-colors">Public Portal</a>
+                </div>
+                <div class="text-xs text-slate-600">
+                    &copy; 2026 EcoResilience Campaign Kenya.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. City Climate Simulation Engine ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let canopy = 20;
+        let urban = 60;
+        let emissions = 50;
+
+        function updateSimulation() {
+            canopy = parseInt(document.getElementById('sim-canopy').value);
+            urban = parseInt(document.getElementById('sim-urban').value);
+            emissions = parseInt(document.getElementById('sim-emissions').value);
+
+            document.getElementById('canopy-val').innerText = canopy + '%';
+            document.getElementById('urban-val').innerText = urban + '%';
+            document.getElementById('emissions-val').innerText = emissions + '%';
+
+            // Calculate metrics based on physics sliders
+            const temp = (22 + (urban * 0.15) + (emissions * 0.1) - (canopy * 0.12)).toFixed(1);
+            const aqi = Math.round(30 + (emissions * 1.8) + (urban * 0.8) - (canopy * 0.9));
+            
+            document.getElementById('output-temp').innerText = temp + '°C';
+            document.getElementById('output-aqi').innerText = aqi + ' AQI';
+
+            const waterRisk = (urban + emissions - canopy > 80) ? 'Severe' : (urban + emissions - canopy > 40) ? 'High' : 'Moderate';
+            document.getElementById('output-water').innerText = waterRisk;
+        }
+
+        // Render loop for micro-climate animation
+        let particles = [];
+        for(let i=0; i<40; i++) {
+            particles.push({
+                x: Math.random() * 600,
+                y: Math.random() * 300,
+                speed: 0.5 + Math.random() * 1.5,
+                size: 2 + Math.random() * 4
+            });
+        }
+
+        function drawSim() {
+            if(!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Sky gradient based on emissions
+            const skyColor = emissions > 60 ? '#1e1b18' : '#0284c7';
+            ctx.fillStyle = skyColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.5);
+
+            // Sun / Heat glow
+            ctx.beginPath();
+            ctx.arc(canvas.width - 60, 50, 30, 0, Math.PI * 2);
+            ctx.fillStyle = urban > 50 ? '#f97316' : '#fde047';
+            ctx.fill();
+
+            // Ground & Urban layer
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, canvas.height * 0.5, canvas.width, canvas.height * 0.5);
+
+            // Draw Buildings (Urban density)
+            const numBuildings = Math.floor((urban / 100) * 12) + 2;
+            const bWidth = canvas.width / (numBuildings + 2);
+            for(let i=0; i<numBuildings; i++) {
+                ctx.fillStyle = '#334155';
+                const bHeight = 40 + (i % 3) * 30 + (urban * 0.5);
+                ctx.fillRect(i * (bWidth + 10) + 20, canvas.height * 0.5 - bHeight, bWidth, bHeight);
+            }
+
+            // Draw Trees (Canopy density)
+            const numTrees = Math.floor((canopy / 100) * 16) + 1;
+            for(let i=0; i<numTrees; i++) {
+                const tx = (i * (canvas.width / numTrees)) + 15;
+                const ty = canvas.height * 0.5;
+
+                // Trunk
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(tx, ty - 20, 6, 20);
+
+                // Leaves
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath();
+                ctx.arc(tx + 3, ty - 25, 14, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Pollution Particle animation
+            ctx.fillStyle = emissions > 50 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 255, 255, 0.3)';
+            particles.forEach(p => {
+                p.x += p.speed;
+                if(p.x > canvas.width) p.x = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(drawSim);
+        }
+
+        // --- 2. Interactive Comparison Slider Logic ---
+        const handle = document.getElementById('slider-handle');
+        const beforeDiv = document.getElementById('slider-before');
+        const beforeImg = document.getElementById('before-img');
+        const container = handle ? handle.parentElement : null;
+
+        if (handle && container) {
+            let isDragging = false;
+
+            const moveSlider = (x) => {
+                const rect = container.getBoundingClientRect();
+                let position = x - rect.left;
+                if (position < 0) position = 0;
+                if (position > rect.width) position = rect.width;
+
+                const percentage = (position / rect.width) * 100;
+                handle.style.left = percentage + '%';
+                beforeDiv.style.width = percentage + '%';
+                beforeImg.style.width = rect.width + 'px';
+            };
+
+            handle.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                moveSlider(e.clientX);
+            });
+
+            // Touch support
+            handle.addEventListener('touchstart', () => isDragging = true);
+            window.addEventListener('touchend', () => isDragging = false);
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                moveSlider(e.touches[0].clientX);
+            });
+        }
+
+        // --- 3. Kenyan Counties Data Engine ---
+        const countyData = [
+            { name: 'Nairobi', region: 'Central', forest: 6.8, aqi: 112, risk: 'High', status: 'Active Intervention' },
+            { name: 'Nakuru', region: 'Rift Valley', forest: 15.2, aqi: 68, risk: 'Moderate', status: 'Monitoring' },
+            { name: 'Kiambu', region: 'Central', forest: 18.4, aqi: 75, risk: 'Moderate', status: 'Active Intervention' },
+            { name: 'Mombasa', region: 'Coast', forest: 4.1, aqi: 98, risk: 'Critical', status: 'Active Intervention' },
+            { name: 'Kisumu', region: 'Nyanza', forest: 3.5, aqi: 89, risk: 'High', status: 'Monitoring' },
+            { name: 'Kericho', region: 'Rift Valley', forest: 24.1, aqi: 35, risk: 'Low', status: 'Sustained' },
+            { name: 'Kilifi', region: 'Coast', forest: 8.9, aqi: 62, risk: 'High', status: 'Monitoring' },
+            { name: 'Garissa', region: 'North Eastern', forest: 1.2, aqi: 85, risk: 'Critical', status: 'Emergency Support' },
+            { name: 'Machakos', region: 'Eastern', forest: 5.4, aqi: 80, risk: 'High', status: 'Monitoring' }
+        ];
+
+        function renderCounties(data) {
+            const tbody = document.getElementById('county-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            data.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/80 transition-colors';
+                
+                const riskColor = c.risk === 'Critical' ? 'text-red-400 bg-red-950/60 border-red-800' :
+                                  c.risk === 'High' ? 'text-kurz-orange bg-amber-950/60 border-amber-800' :
+                                  'text-brand-400 bg-brand-950/60 border-brand-800';
+
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-white">${c.name}</td>
+                    <td class="p-4 text-slate-400">${c.region}</td>
+                    <td class="p-4 font-bold text-brand-300">${c.forest}%</td>
+                    <td class="p-4 text-slate-300">${c.aqi} AQI</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${riskColor}">${c.risk}</span></td>
+                    <td class="p-4 text-xs font-bold text-slate-300">${c.status}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterCounties() {
+            const query = document.getElementById('county-search').value.toLowerCase();
+            const filtered = countyData.filter(c => c.name.toLowerCase().includes(query) || c.region.toLowerCase().includes(query));
+            renderCounties(filtered);
+        }
+
+        function sortCounties(key) {
+            let sorted = [...countyData];
+            if(key === 'forest') sorted.sort((a,b) => b.forest - a.forest);
+            if(key === 'risk') sorted.sort((a,b) => (a.risk === 'Critical' ? -1 : 1));
+            renderCounties(sorted);
+        }
+
+        // --- 4. File Upload & Donation Handlers ---
+        function previewFile(input) {
+            if(input.files && input.files[0]) {
+                document.getElementById('file-name').innerText = input.files[0].name;
+                document.getElementById('file-preview').classList.remove('hidden');
+            }
+        }
+
+        function handleUpload(e) {
+            e.preventDefault();
+            document.getElementById('upload-form').reset();
+            document.getElementById('file-preview').classList.add('hidden');
+            const success = document.getElementById('upload-success');
+            success.classList.remove('hidden');
+            setTimeout(() => success.classList.add('hidden'), 5000);
+        }
+
+        let currentSelectedAmount = 500;
+        function selectTier(amount, btnElement) {
+            document.querySelectorAll('.tier-btn').forEach(btn => {
+                btn.classList.remove('border-brand-500', 'bg-brand-950/40');
+                btn.classList.add('border-slate-800', 'bg-slate-900');
+            });
+
+            btnElement.classList.add('border-brand-500', 'bg-brand-950/40');
+            btnElement.classList.remove('border-slate-800', 'bg-slate-900');
+
+            const customWrap = document.getElementById('custom-amount-wrap');
+            if (amount === 'custom') {
+                customWrap.classList.remove('hidden');
+                currentSelectedAmount = null;
+            } else {
+                customWrap.classList.add('hidden');
+                currentSelectedAmount = amount;
+            }
+        }
+
+        function processDonation() {
+            let amount = currentSelectedAmount || document.getElementById('custom-amount-input').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid contribution amount.');
+                return;
+            }
+            const phone = document.getElementById('phone-number').value;
+            alert(`Simulated M-Pesa STK Prompt Sent!\n\nAmount: KES ${amount}\nPhone: ${phone || 'N/A'}\n\nPlease enter your PIN on your handset.`);
+        }
+
+        // Initialize App on Load
+        window.onload = function() {
+            updateSimulation();
+            drawSim();
+            renderCounties(countyData);
+        };
+    </script>
+</body>
+</html>
